@@ -311,10 +311,11 @@
     </div>
   </div>
 
-  <!-- Modal for Images -->
+  <!-- Modal for Images & PDFs -->
   <div id="image-modal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.9); align-items: center; justify-content: center;">
-    <span onclick="document.getElementById('image-modal').style.display='none'" style="position: absolute; top: 20px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; cursor: pointer;">&times;</span>
-    <img id="modal-img" style="margin: auto; display: block; max-width: 90%; max-height: 90vh; object-fit: contain; border-radius: 8px;">
+    <span onclick="document.getElementById('image-modal').style.display='none'" style="position: absolute; top: 20px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; cursor: pointer; z-index: 10000;">&times;</span>
+    <div class="loader-modal" style="position: absolute; color: white; display: none;">Memuat dokumen...</div>
+    <iframe id="modal-iframe" style="margin: auto; display: block; width: 80%; height: 80vh; border: none; border-radius: 8px; background: white; z-index: 9999;"></iframe>
   </div>
 
   <script src="script.js"></script>

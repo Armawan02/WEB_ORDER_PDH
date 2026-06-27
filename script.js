@@ -381,22 +381,17 @@ window.updateStatus = async function(rowId, type, value) {
     }
 }
 
-// Image Modal Handler
+// Modal Handler (Universal for Image & PDF)
 window.openImageModal = function(url) {
     if(!url) return;
     const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
     if(match && match[1]) {
         const fileId = match[1];
-        const imgUrl = `https://drive.google.com/uc?id=${fileId}`;
+        const iframeUrl = `https://drive.google.com/file/d/${fileId}/preview`;
         const modal = document.getElementById('image-modal');
-        const modalImg = document.getElementById('modal-img');
+        const modalIframe = document.getElementById('modal-iframe');
         
-        modalImg.onerror = function() {
-           window.open(url, '_blank');
-           modal.style.display = 'none';
-        };
-        
-        modalImg.src = imgUrl;
+        modalIframe.src = iframeUrl;
         modal.style.display = 'flex';
     } else {
         window.open(url, '_blank');
