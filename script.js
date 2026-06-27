@@ -37,7 +37,7 @@ document.getElementById('form-pesanan').addEventListener('submit', async functio
   messageDiv.className = 'message';
   
   try {
-    if (GAS_API_URL === 'GANTI_DENGAN_URL_WEB_APP_APPS_SCRIPT_ANDA' || !GAS_API_URL.startsWith('http')) {
+    if (GAS_API_URL === 'https://script.google.com/macros/s/AKfycbyzHqAx49RV-iKTrwZYJboSnsOynhc4t2sCngZOVst2gVtqih82qfrjQ9APjzgFSDevdw/exec' || !GAS_API_URL.startsWith('http')) {
         throw new Error("PENTING: Konfigurasi sistem belum selesai! Anda harus mengganti variabel GAS_API_URL di script.js dengan URL hasil deploy backend Google Apps Script.");
     }
 
@@ -108,7 +108,7 @@ document.getElementById('form-pesanan').addEventListener('submit', async functio
 async function loadDataPesanan() {
   const tbody = document.getElementById('table-body');
   
-  if (GAS_API_URL === 'GANTI_DENGAN_URL_WEB_APP_APPS_SCRIPT_ANDA' || !GAS_API_URL.startsWith('http')) {
+  if (GAS_API_URL === 'https://script.google.com/macros/s/AKfycbyzHqAx49RV-iKTrwZYJboSnsOynhc4t2sCngZOVst2gVtqih82qfrjQ9APjzgFSDevdw/exec' || !GAS_API_URL.startsWith('http')) {
       tbody.innerHTML = '<tr><td colspan="9" class="text-center" style="color: var(--warning);">Sistem menunggu konfigurasi URL Backend...</td></tr>';
       return;
   }
