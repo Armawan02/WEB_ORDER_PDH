@@ -1,4 +1,5 @@
-// PENTING: Ganti string ini dengan URL Web App (Deployment) dari Google Apps Script Anda!
+// KONFIGURASI API
+// Ganti URL ini dengan URL Web App Google Apps Script Anda (WAJIB DIBUAT DARI DEPLOYMENT BARU!)
 const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyzHqAx49RV-iKTrwZYJboSnsOynhc4t2sCngZOVst2gVtqih82qfrjQ9APjzgFSDevdw/exec';
 
 let isAdmin = false;
