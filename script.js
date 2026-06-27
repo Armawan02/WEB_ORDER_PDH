@@ -241,7 +241,7 @@ window.updateStatus = async function(rowId, type, value) {
 
 // Admin Modal Logic
 const loginModal = document.getElementById('login-modal');
-const btnShowLogin = document.getElementById('btn-show-login');
+const btnShowLogin = document.getElementById('logo-btn');
 const closeModal = document.getElementById('close-modal');
 const btnLogin = document.getElementById('btn-login');
 const btnLogout = document.getElementById('btn-logout');
@@ -277,7 +277,6 @@ btnLogin.addEventListener('click', async () => {
             msg.style.display = 'none';
             document.getElementById('admin-badge').style.display = 'inline-block';
             document.getElementById('admin-dashboard').style.display = 'block';
-            document.getElementById('btn-show-login').style.display = 'none';
             document.getElementById('btn-logout').style.display = 'inline-block';
             document.querySelector('.form-card').style.display = 'none'; 
             renderTable(globalData);
@@ -297,7 +296,6 @@ btnLogout.addEventListener('click', () => {
     isAdmin = false;
     document.getElementById('admin-badge').style.display = 'none';
     document.getElementById('admin-dashboard').style.display = 'none';
-    document.getElementById('btn-show-login').style.display = 'inline-block';
     document.getElementById('btn-logout').style.display = 'none';
     document.querySelector('.form-card').style.display = 'block';
     document.getElementById('admin-password').value = '';
