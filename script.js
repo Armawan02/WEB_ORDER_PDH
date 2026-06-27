@@ -245,6 +245,22 @@ const btnShowLogin = document.getElementById('logo-btn');
 const closeModal = document.getElementById('close-modal');
 const btnLogin = document.getElementById('btn-login');
 const btnLogout = document.getElementById('btn-logout');
+const togglePassword = document.getElementById('toggle-password');
+const adminPassword = document.getElementById('admin-password');
+const eyeIconShow = document.getElementById('eye-icon-show');
+const eyeIconHide = document.getElementById('eye-icon-hide');
+
+togglePassword.addEventListener('click', () => {
+    if (adminPassword.type === 'password') {
+        adminPassword.type = 'text';
+        eyeIconShow.style.display = 'none';
+        eyeIconHide.style.display = 'block';
+    } else {
+        adminPassword.type = 'password';
+        eyeIconShow.style.display = 'block';
+        eyeIconHide.style.display = 'none';
+    }
+});
 
 btnShowLogin.addEventListener('click', () => loginModal.classList.add('show'));
 closeModal.addEventListener('click', () => {
