@@ -1,5 +1,6 @@
 // Konstanta ID Spreadsheet untuk menyimpan data pesanan
 const SPREADSHEET_ID = 'GANTI_DENGAN_ID_SPREADSHEET_ANDA';
+const ADMIN_PASSWORD = 'admin'; // Password default, bisa diganti
 
 /**
  * Menangani request GET dari Frontend (menampilkan tabel data)
@@ -17,11 +18,13 @@ function doGet(e) {
     for (let i = 1; i < data.length; i++) {
       const row = data[i];
       result.push({
+        rowId: i + 1, // Baris di Google Sheet dimulai dari 1 (header di baris 1, data mulai baris 2)
         no: i,
         nama: row[0],
         ukuran: row[1],
         jenisPdh: row[3],
         volume: row[4],
+        buktiTf: row[5],
         statusBayar: row[6],
         statusProses: row[7],
         waktu: row[9]
@@ -37,11 +40,10 @@ function doGet(e) {
 }
 
 /**
- * Menangani request POST dari Frontend (mengirim data pesanan dan upload file)
+ * Menangani request POST dari Frontend (mengirim data pesanan, login admin, dan update)
  */
 function doPost(e) {
   try {
-    // Karena kita menggunakan fetch dengan text/plain (menghindari blokir CORS), data harus di-parse secara manual
     let data;
     try {
       data = JSON.parse(e.postData.contents);
@@ -50,6 +52,34 @@ function doPost(e) {
          .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // --- LOGIC LOGIN ADMIN ---
+    if (data.action === 'login') {
+      if (data.password === ADMIN_PASSWORD) {
+         return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Login berhasil' })).setMimeType(ContentService.MimeType.JSON);
+      } else {
+         return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Password salah' })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    // --- LOGIC UPDATE STATUS ---
+    if (data.action === 'update_status') {
+       if (data.password !== ADMIN_PASSWORD) {
+          return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Tidak memiliki izin' })).setMimeType(ContentService.MimeType.JSON);
+       }
+       const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+       const sheet = ss.getSheetByName('Pemesanan');
+       
+       if (data.type === 'bayar') {
+          // Kolom ke-7 adalah Status Bayar (G)
+          sheet.getRange(data.rowId, 7).setValue(data.value);
+       } else if (data.type === 'proses') {
+          // Kolom ke-8 adalah Status Proses (H)
+          sheet.getRange(data.rowId, 8).setValue(data.value);
+       }
+       return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Status berhasil diperbarui' })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // --- LOGIC ORDER BARU (DEFAULT) ---
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     const sheet = ss.getSheetByName('Pemesanan') || ss.insertSheet('Pemesanan');
     
