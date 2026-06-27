@@ -361,8 +361,8 @@ async function loadDataPesanan() {
     if(isAdmin) renderDashboard(globalData);
 
   } catch (err) {
-    document.getElementById('table-body').innerHTML = '<tr><td colspan="9" class="text-center" style="color: var(--danger);">Gagal memuat data dari server.</td></tr>';
-    console.error(err);
+    document.getElementById('table-body').innerHTML = `<tr><td colspan="15" class="text-center" style="color: var(--danger);">Gagal memuat data dari server. Error: ${err.message}</td></tr>`;
+    console.error("Fetch Data Error:", err);
   }
 }
 
