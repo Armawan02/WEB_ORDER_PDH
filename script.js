@@ -164,7 +164,6 @@ document.getElementById('form-pesanan').addEventListener('submit', async functio
   }
 });
 
-let globalData = [];
 let currentPassword = '';
 
 let countdownInterval;
