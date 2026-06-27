@@ -22,14 +22,16 @@ function doGet(e) {
         no: i,
         nama: row[0],
         ukuran: row[1],
+        divisi: row[2],
         jenisPdh: row[3],
-        volume: row[4],
-        buktiTf: row[5],
-        statusBayar: row[6],
-        statusProses: row[7],
-        waktu: row[9],
-        karya: row[10] || '',
-        validasi: row[11] || ''
+        karya: row[4] || '',
+        validasi: row[5] || '',
+        volume: row[6],
+        buktiTf: row[7],
+        statusBayar: row[8],
+        statusProses: row[9],
+        noWa: row[10],
+        waktu: row[11]
       });
     }
     
@@ -72,14 +74,14 @@ function doPost(e) {
        const sheet = ss.getSheetByName('Pemesanan');
        
        if (data.type === 'bayar') {
-          // Kolom ke-7 adalah Status Bayar (G)
-          sheet.getRange(data.rowId, 7).setValue(data.value);
+          // Kolom ke-9 adalah Status Bayar (I)
+          sheet.getRange(data.rowId, 9).setValue(data.value);
        } else if (data.type === 'proses') {
-          // Kolom ke-8 adalah Status Proses (H)
-          sheet.getRange(data.rowId, 8).setValue(data.value);
+          // Kolom ke-10 adalah Status Produksi (J)
+          sheet.getRange(data.rowId, 10).setValue(data.value);
        } else if (data.type === 'validasi') {
-          // Kolom ke-12 adalah Status Validasi (L)
-          sheet.getRange(data.rowId, 12).setValue(data.value);
+          // Kolom ke-6 adalah Status Exclusive (F)
+          sheet.getRange(data.rowId, 6).setValue(data.value);
        }
        return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Status berhasil diperbarui' })).setMimeType(ContentService.MimeType.JSON);
     }
@@ -89,7 +91,7 @@ function doPost(e) {
     const sheet = ss.getSheetByName('Pemesanan') || ss.insertSheet('Pemesanan');
     
     if (sheet.getLastRow() === 0) {
-      sheet.appendRow(['Nama', 'Ukuran', 'Divisi', 'Jenis PDH', 'volume', 'Bukti Trans', 'Status Bayar', 'Status Proses', 'Nomor WhatsApp', 'Waktu Pemesanan', 'Link Karya', 'Validasi']);
+      sheet.appendRow(['Nama', 'Ukuran', 'Divisi', 'Jenis PDH', 'Syarat Exclusive', 'Status Exclusive', 'volume', 'Bukti Trans', 'Status Bayar', 'Status Produksi', 'Nomor WhatsApp', 'Waktu Pemesanan']);
       sheet.getRange(1, 1, 1, 12).setFontWeight('bold').setBackground('#e0e0e0');
     }
     
@@ -130,14 +132,14 @@ function doPost(e) {
       data.ukuran,
       data.divisi,
       data.jenisPdh,
+      karyaUrl,
+      statusValidasi,
       data.volume,
       fileUrl,
       'Pending', 
       'Proses',  
       "'" + data.noWa, 
-      new Date(),
-      karyaUrl,
-      statusValidasi
+      new Date()
     ];
     
     sheet.appendRow(rowData);

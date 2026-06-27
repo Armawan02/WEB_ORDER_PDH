@@ -196,8 +196,10 @@ function renderTable(data) {
         <td>${item.no}</td>
         <td style="font-weight: 600;">${item.nama}</td>
         <td style="color: var(--primary); font-weight: bold;">${item.ukuran}</td>
+        <td>${item.divisi || '-'}</td>
         <td>${item.jenisPdh}</td>
         <td>${item.volume} Pcs</td>
+        <td>${item.noWa || '-'}</td>
         <td>${buktiTfCell}</td>
         <td>${karyaCell}</td>
         <td>${validasiCell}</td>
