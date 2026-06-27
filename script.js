@@ -826,6 +826,7 @@ btnLogin.addEventListener('click', async () => {
             document.getElementById('admin-badge').style.display = 'inline-block';
             document.getElementById('admin-dashboard').style.display = 'block';
             document.getElementById('btn-logout').style.display = 'inline-block';
+            document.getElementById('btn-generate-pdf').style.display = 'inline-flex';
             document.querySelector('.form-card').style.display = 'none'; 
             renderTable(globalData);
             renderDashboard(globalData);
@@ -846,10 +847,15 @@ btnLogout.addEventListener('click', () => {
     document.getElementById('admin-badge').style.display = 'none';
     document.getElementById('admin-dashboard').style.display = 'none';
     document.getElementById('btn-logout').style.display = 'none';
+    document.getElementById('btn-generate-pdf').style.display = 'none';
     document.querySelector('.form-card').style.display = 'block';
     document.getElementById('admin-password').value = '';
     renderTable(globalData);
 });
+
+if (document.getElementById('btn-generate-pdf')) {
+    document.getElementById('btn-generate-pdf').addEventListener('click', generatePDF);
+}
 
 window.addEventListener('DOMContentLoaded', () => {
   loadDataPesanan();
