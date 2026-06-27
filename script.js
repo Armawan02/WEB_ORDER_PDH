@@ -360,9 +360,14 @@ async function loadDataPesanan() {
 
 function renderTable(data) {
     const tbody = document.getElementById('table-body');
-    const badge = document.getElementById('total-order-badge');
-    tbody.innerHTML = ''; 
+    tbody.innerHTML = '';
     
+    const colAksi = document.querySelector('.col-aksi');
+    if (colAksi) {
+        colAksi.style.display = isAdmin ? 'table-cell' : 'none';
+    }
+    
+    const badge = document.getElementById('total-order-badge');
     badge.textContent = `Total Order: ${data.length}`;
     
     if (data.length === 0) {
@@ -469,6 +474,23 @@ function renderTable(data) {
           }
       }
 
+      let aksiCell = '';
+      if(isAdmin) {
+          const safeNama = item.nama ? item.nama.replace(/'/g, "\\'") : '';
+          const safeNowa = item.noWa ? item.noWa.replace(/'/g, "\\'") : '';
+          const safeDivisi = item.divisi ? item.divisi.replace(/'/g, "\\'") : '';
+          const safeUkuran = item.ukuran ? item.ukuran.replace(/'/g, "\\'") : '';
+          const safeJenis = item.jenisPdh ? item.jenisPdh.replace(/'/g, "\\'") : '';
+          const safeVolume = item.volume ? String(item.volume).replace(/'/g, "\\'") : '';
+          
+          aksiCell = `<td class="col-aksi">
+              <div style="display: flex; gap: 5px;">
+                 <button type="button" class="btn-sm" style="background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); color: #3b82f6;" onclick="openEditModal(${item.rowId}, '${safeNama}', '${safeNowa}', '${safeDivisi}', '${safeUkuran}', '${safeJenis}', '${safeVolume}')">Edit</button>
+                 <button type="button" class="btn-sm" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #ef4444;" onclick="deleteOrder(${item.rowId})">Hapus</button>
+              </div>
+          </td>`;
+      }
+
       tr.innerHTML = `
         <td>${item.no}</td>
         <td style="font-weight: 600;">${item.nama}</td>
@@ -484,9 +506,131 @@ function renderTable(data) {
         <td>${bayarCell}</td>
         <td>${prosesCell}</td>
         <td style="color: var(--text-muted); font-size: 12px;">${dateStr}</td>
+        ${isAdmin ? aksiCell : ''}
       `;
       tbody.appendChild(tr);
     });
+}
+
+function deleteOrder(rowId) {
+    if (!confirm('Hapus pesanan ini?')) return;
+    performAdminAction('delete_order', { rowId });
+}
+
+function openEditModal(rowId, nama, noWa, divisi, ukuran, jenisPdh, volume) {
+    document.getElementById('edit-rowId').value = rowId;
+    document.getElementById('edit-nama').value = nama;
+    document.getElementById('edit-noWa').value = noWa;
+    document.getElementById('edit-divisi').value = divisi;
+    document.getElementById('edit-ukuran').value = ukuran;
+    document.getElementById('edit-jenisPdh').value = jenisPdh;
+    document.getElementById('edit-volume').value = volume;
+    document.getElementById('edit-modal').style.display = 'flex';
+}
+
+async function saveEditOrder() {
+    const data = {
+        rowId: document.getElementById('edit-rowId').value,
+        nama: document.getElementById('edit-nama').value,
+        noWa: document.getElementById('edit-noWa').value,
+        divisi: document.getElementById('edit-divisi').value,
+        ukuran: document.getElementById('edit-ukuran').value,
+        jenisPdh: document.getElementById('edit-jenisPdh').value,
+        volume: document.getElementById('edit-volume').value
+    };
+    await performAdminAction('edit_order', data);
+    document.getElementById('edit-modal').style.display = 'none';
+}
+
+async function performAdminAction(action, payload) {
+    try {
+        const response = await fetch(GAS_API_URL, {
+            method: 'POST',
+            headers: {'Content-Type': 'text/plain;charset=utf-8'},
+            body: JSON.stringify({ action, password: currentPassword, ...payload })
+        });
+        const result = await response.json();
+        if(result.success) {
+            alert('Berhasil');
+            loadDataPesanan();
+        } else {
+            alert('Gagal: ' + result.message);
+        }
+    } catch(e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+function generatePDF() {
+    if (!window.jspdf) {
+        alert("Library PDF belum termuat, silakan coba lagi atau cek koneksi internet.");
+        return;
+    }
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape');
+    
+    doc.setFontSize(16);
+    doc.text("Laporan Pemesanan PDH ISC", 14, 15);
+    
+    doc.setFontSize(11);
+    let totalLunas = 0, totalDP = 0, omset = 0, totalPemesan = globalData.length;
+    
+    globalData.forEach(item => {
+        let vols = String(item.volume).split(',').map(s => parseInt(s.trim()) || 1);
+        let valids = String(item.validasi).split(',').map(s => s.trim().toLowerCase());
+        let jenis = String(item.jenisPdh).split(',').map(s => s.trim().toLowerCase());
+        
+        for (let i = 0; i < vols.length; i++) {
+            let v = vols[i];
+            let typePdh = (jenis[i] || '');
+            let val = (valids[i] || '');
+            if (typePdh.includes('exclusive')) {
+                if (val === 'disetujui' || val === 'lulus') {
+                    omset += v * 155000;
+                }
+            } else {
+                omset += v * 155000;
+            }
+        }
+        
+        let sb = item.statusBayar.toLowerCase();
+        if (sb.includes('lunas')) totalLunas++;
+        if (sb.includes('dp')) totalDP++;
+    });
+    
+    doc.text(`Total Pemesan: ${totalPemesan} orang`, 14, 25);
+    doc.text(`Status Pembayaran - Lunas: ${totalLunas} | DP: ${totalDP}`, 14, 31);
+    doc.text(`Estimasi Omset: Rp ${omset.toLocaleString('id-ID')}`, 14, 37);
+    
+    const tableColumn = ["No", "Nama", "Divisi", "Ukuran", "Jenis PDH", "Vol", "Status Bayar", "Validasi Exclusive"];
+    const tableRows = [];
+    
+    globalData.forEach((item, index) => {
+        tableRows.push([
+            index + 1,
+            item.nama,
+            item.divisi || '-',
+            item.ukuran,
+            item.jenisPdh,
+            item.volume,
+            item.statusBayar,
+            item.validasi || '-'
+        ]);
+    });
+    
+    doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 43,
+        theme: 'striped',
+        styles: { fontSize: 9, cellPadding: 2 },
+        headStyles: { fillColor: [77, 166, 255] },
+        alternateRowStyles: { fillColor: [240, 240, 240] }
+    });
+    
+    const dateStr = new Date().toISOString().slice(0, 10);
+    doc.save(`Laporan_PDH_${dateStr}.pdf`);
 }
 
 function renderDashboard(data) {
@@ -570,7 +714,6 @@ function renderDashboard(data) {
     });
 }
 
-// Status updates for Admin
 window.updateStatus = async function(rowId, type, value) {
     if (!confirm(`Yakin ingin mengubah status menjadi ${value}?`)) {
         loadDataPesanan();
@@ -611,7 +754,6 @@ window.updateStatus = async function(rowId, type, value) {
     }
 }
 
-// Modal Handler (Universal for Image & PDF)
 window.openImageModal = function(url) {
     if(!url) return;
     const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
@@ -628,7 +770,6 @@ window.openImageModal = function(url) {
     }
 }
 
-// Admin Modal Logic
 const loginModal = document.getElementById('login-modal');
 const btnShowLogin = document.getElementById('logo-btn');
 const closeModal = document.getElementById('close-modal');

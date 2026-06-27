@@ -108,6 +108,35 @@ function doPost(e) {
        return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Pengaturan jadwal berhasil disimpan!' })).setMimeType(ContentService.MimeType.JSON);
     }
 
+    // --- LOGIC DELETE ORDER ---
+    if (data.action === 'delete_order') {
+       if (data.password !== ADMIN_PASSWORD) {
+          return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Tidak memiliki izin' })).setMimeType(ContentService.MimeType.JSON);
+       }
+       const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+       const sheet = ss.getSheetByName('Pemesanan');
+       sheet.deleteRow(data.rowId);
+       return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Pesanan berhasil dihapus' })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // --- LOGIC EDIT ORDER ---
+    if (data.action === 'edit_order') {
+       if (data.password !== ADMIN_PASSWORD) {
+          return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Tidak memiliki izin' })).setMimeType(ContentService.MimeType.JSON);
+       }
+       const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+       const sheet = ss.getSheetByName('Pemesanan');
+       
+       sheet.getRange(data.rowId, 1).setValue(data.editData.nama);
+       sheet.getRange(data.rowId, 2).setValue(data.editData.ukuran);
+       sheet.getRange(data.rowId, 3).setValue(data.editData.divisi);
+       sheet.getRange(data.rowId, 4).setValue(data.editData.jenisPdh);
+       sheet.getRange(data.rowId, 7).setValue(data.editData.volume);
+       sheet.getRange(data.rowId, 11).setValue("'" + data.editData.noWa);
+
+       return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Data pesanan berhasil diperbarui' })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     // --- LOGIC ORDER BARU (DEFAULT) ---
     const props = PropertiesService.getScriptProperties();
     const isOpenState = props.getProperty('isOpen') || 'auto';

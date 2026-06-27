@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pemesanan PDH ISC</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
@@ -178,7 +180,8 @@
         <h3 class="card-title"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4da6ff" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg> Daftar Reservasi PDH <span id="admin-badge" class="badge" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); display: none; margin-left: 10px; font-size: 10px;">MODE ADMIN</span></h3>
         <div class="header-actions" style="display: flex; align-items: center; gap: 10px;">
           <div class="total-order" id="total-order-badge">Total Order: 0</div>
-          <button id="btn-logout" class="btn-icon" title="Logout" style="background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; padding: 6px; border-radius: 6px; cursor: pointer; display: none;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg></button>
+          <button id="btn-generate-pdf" class="btn-success" style="padding: 6px 12px; font-size: 12px; display: none; height: 32px; align-items: center; gap: 5px;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Generate PDF</button>
+          <button id="btn-logout" class="btn-icon" title="Logout" style="background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; padding: 6px; border-radius: 6px; cursor: pointer; display: none; height: 32px;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg></button>
         </div>
       </div>
 
@@ -275,6 +278,7 @@
               <th>BAYAR</th>
               <th>PRODUKSI</th>
               <th>WAKTU ORDER</th>
+              <th class="col-aksi" style="display: none;">AKSI</th>
             </tr>
           </thead>
           <tbody id="table-body">
@@ -328,6 +332,48 @@
         </div>
         <button id="btn-login" class="btn-primary">LOGIN</button>
         <div id="login-message" class="message" style="display: none; margin-top: 15px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Edit Pesanan -->
+  <div id="edit-modal" class="modal">
+    <div class="modal-content glass" style="max-width: 500px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header">
+        <h3 style="margin: 0; font-size: 18px; color: #fff;">Edit Pesanan</h3>
+        <button id="close-edit-modal" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body" style="padding-top: 20px;">
+        <input type="hidden" id="edit-row-id">
+        <div class="form-group">
+          <label>Nama Pemesan</label>
+          <input type="text" id="edit-nama">
+        </div>
+        <div class="form-group">
+          <label>No WhatsApp</label>
+          <input type="text" id="edit-nowa">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Divisi</label>
+            <input type="text" id="edit-divisi">
+          </div>
+          <div class="form-group">
+            <label>Ukuran</label>
+            <input type="text" id="edit-ukuran" placeholder="Contoh: L, XL">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Jenis PDH</label>
+            <input type="text" id="edit-jenis" placeholder="Contoh: Standard, Exclusive">
+          </div>
+          <div class="form-group">
+            <label>Volume (Jumlah)</label>
+            <input type="text" id="edit-volume" placeholder="Contoh: 1, 2">
+          </div>
+        </div>
+        <button id="btn-save-edit" class="btn-primary">Simpan Perubahan</button>
       </div>
     </div>
   </div>
