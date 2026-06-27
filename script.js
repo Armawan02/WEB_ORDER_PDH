@@ -111,18 +111,19 @@ document.getElementById('form-pesanan').addEventListener('submit', async functio
     for (let item of pesananItems) {
        const jp = item.querySelector('.jenisPdh-input').value;
        const uk = item.querySelector('.ukuran-input').value;
+       const divInput = item.querySelector('.divisi-input').value;
        const vol = item.querySelector('.volume-input').value;
        
+       if (!divInput) throw new Error("Divisi wajib dipilih untuk setiap pesanan.");
+
        let itemData = {
            jenisPdh: jp,
            ukuran: uk,
+           divisi: divInput,
            volume: vol
        };
        
        if (jp === 'Exclusive') {
-           const divInput = item.querySelector('.divisi-input').value;
-           if (!divInput) throw new Error("Divisi wajib dipilih untuk tipe Exclusive.");
-           itemData.divisi = divInput;
 
            const karyaInput = item.querySelector('.fileKarya-local');
            const fileKarya = karyaInput.files[0];

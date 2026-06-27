@@ -44,7 +44,7 @@
             <div class="bank-owner">ATAS NAMA MARYAM</div>
           </div>
           <div class="dp-info">
-            DP : Rp 50.000
+            DP : Rp 80.000
           </div>
         </div>
       </div>
@@ -127,15 +127,11 @@
                 </div>
               </div>
             </div>
-            <div class="form-group" style="margin-bottom: 0;">
-              <label>Volume (Jumlah)</label>
-              <input type="number" class="volume-input" min="1" value="1" required>
-            </div>
-            <div class="form-group karya-group-local" style="display: none; background: rgba(16, 185, 129, 0.1); padding: 15px; border-radius: 12px; border: 1px dashed rgba(16, 185, 129, 0.3); margin-top: 15px; margin-bottom: 0;">
-              <div class="form-group" style="margin-bottom: 15px;">
-                <label style="color: #10b981;">Divisi (Khusus Exclusive)</label>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Divisi</label>
                 <div class="select-wrapper">
-                  <select class="divisi-input">
+                  <select class="divisi-input" required>
                     <option value="" disabled selected>Pilih Divisi...</option>
                     <option value="WEB">WEB</option>
                     <option value="Mobile">Mobile</option>
@@ -145,6 +141,12 @@
                   </select>
                 </div>
               </div>
+              <div class="form-group">
+                <label>Volume (Jumlah)</label>
+                <input type="number" class="volume-input" min="1" value="1" required>
+              </div>
+            </div>
+            <div class="form-group karya-group-local" style="display: none; background: rgba(16, 185, 129, 0.1); padding: 15px; border-radius: 12px; border: 1px dashed rgba(16, 185, 129, 0.3); margin-top: 15px; margin-bottom: 0;">
               <label style="color: #10b981;">Unggah Dokumen Pendukung (Khusus Exclusive)</label>
               <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Untuk tipe Exclusive, mohon unggah dokumen pendukung (Sertifikat Prestasi, SK Asdos, Karya, dll) sebagai bahan validasi admin.</p>
               <div class="file-upload">
@@ -155,7 +157,7 @@
         </div>
 
         <button type="button" id="btn-tambah-pesanan" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px dashed rgba(59, 130, 246, 0.5); width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; cursor: pointer; transition: all 0.3s ease;">
-          + Tambah Pesanan Lain
+          + Tambah Pesanan
         </button>
 
         <div class="form-group">
