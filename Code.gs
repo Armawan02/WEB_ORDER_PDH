@@ -35,8 +35,17 @@ function doGet(e) {
       });
     }
     
-    return ContentService.createTextOutput(JSON.stringify(result.reverse()))
-      .setMimeType(ContentService.MimeType.JSON);
+    const props = PropertiesService.getScriptProperties();
+    const config = {
+      isOpen: props.getProperty('isOpen') || 'auto',
+      openTime: props.getProperty('openTime') || '',
+      closeTime: props.getProperty('closeTime') || ''
+    };
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      data: result.reverse(),
+      config: config
+    })).setMimeType(ContentService.MimeType.JSON);
   } catch (error) {
     return ContentService.createTextOutput(JSON.stringify({ error: error.message }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -86,7 +95,40 @@ function doPost(e) {
        return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Status berhasil diperbarui' })).setMimeType(ContentService.MimeType.JSON);
     }
 
+    // --- LOGIC UPDATE CONFIG ---
+    if (data.action === 'update_config') {
+       if (data.password !== ADMIN_PASSWORD) {
+          return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Tidak memiliki izin' })).setMimeType(ContentService.MimeType.JSON);
+       }
+       const props = PropertiesService.getScriptProperties();
+       if (data.config.isOpen !== undefined) props.setProperty('isOpen', data.config.isOpen);
+       if (data.config.openTime !== undefined) props.setProperty('openTime', data.config.openTime);
+       if (data.config.closeTime !== undefined) props.setProperty('closeTime', data.config.closeTime);
+       
+       return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Pengaturan jadwal berhasil disimpan!' })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     // --- LOGIC ORDER BARU (DEFAULT) ---
+    const props = PropertiesService.getScriptProperties();
+    const isOpenState = props.getProperty('isOpen') || 'auto';
+    let isCurrentlyOpen = false;
+    if (isOpenState === 'true') {
+        isCurrentlyOpen = true;
+    } else if (isOpenState === 'false') {
+        isCurrentlyOpen = false;
+    } else {
+        const openTime = props.getProperty('openTime');
+        const closeTime = props.getProperty('closeTime');
+        const now = new Date().getTime();
+        const openTimeMs = openTime ? new Date(openTime).getTime() : 0;
+        const closeTimeMs = closeTime ? new Date(closeTime).getTime() : Infinity;
+        if (now >= openTimeMs && now <= closeTimeMs) isCurrentlyOpen = true;
+    }
+
+    if (!isCurrentlyOpen) {
+       return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Pemesanan saat ini sedang ditutup.' })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     const sheet = ss.getSheetByName('Pemesanan') || ss.insertSheet('Pemesanan');
     

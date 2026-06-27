@@ -164,6 +164,152 @@ document.getElementById('form-pesanan').addEventListener('submit', async functio
   }
 });
 
+let globalData = [];
+let currentPassword = '';
+
+let countdownInterval;
+let serverConfig = { isOpen: 'auto', openTime: '', closeTime: '' };
+
+async function updateAdminConfigUI() {
+    if (!isAdmin) return;
+    if (serverConfig.openTime) {
+        document.getElementById('config-open').value = serverConfig.openTime.substring(0, 16);
+    }
+    if (serverConfig.closeTime) {
+        document.getElementById('config-close').value = serverConfig.closeTime.substring(0, 16);
+    }
+    const statusText = document.getElementById('current-schedule-status');
+    if (serverConfig.isOpen === 'true') {
+        statusText.innerHTML = '<span style="color:#10b981;">BUKA PAKSA</span>';
+    } else if (serverConfig.isOpen === 'false') {
+        statusText.innerHTML = '<span style="color:#ef4444;">TUTUP PAKSA</span>';
+    } else {
+        statusText.innerHTML = '<span style="color:#3b82f6;">JADWAL OTOMATIS</span>';
+    }
+}
+
+function startCountdown() {
+    clearInterval(countdownInterval);
+    const banner = document.getElementById('countdown-banner');
+    const formContainer = document.getElementById('form-container-wrapper');
+
+    countdownInterval = setInterval(() => {
+        let isCurrentlyOpen = false;
+        let timeRemaining = 0;
+        let countdownType = '';
+
+        if (serverConfig.isOpen === 'true') {
+            isCurrentlyOpen = true;
+        } else if (serverConfig.isOpen === 'false') {
+            isCurrentlyOpen = false;
+        } else {
+            const now = new Date().getTime();
+            const openTimeMs = serverConfig.openTime ? new Date(serverConfig.openTime).getTime() : 0;
+            const closeTimeMs = serverConfig.closeTime ? new Date(serverConfig.closeTime).getTime() : Infinity;
+
+            if (now >= openTimeMs && now <= closeTimeMs) {
+                isCurrentlyOpen = true;
+                if (closeTimeMs !== Infinity) {
+                    timeRemaining = closeTimeMs - now;
+                    countdownType = 'tutup';
+                }
+            } else if (now < openTimeMs) {
+                timeRemaining = openTimeMs - now;
+                countdownType = 'buka';
+            }
+        }
+
+        if (!isCurrentlyOpen) {
+            banner.style.display = 'block';
+            banner.style.background = 'rgba(239, 68, 68, 0.1)';
+            banner.style.color = '#ef4444';
+            banner.style.border = '1px dashed rgba(239, 68, 68, 0.3)';
+            formContainer.style.display = 'none';
+            
+            if (countdownType === 'buka') {
+                banner.innerHTML = `Pemesanan akan dibuka dalam: <strong>${formatDuration(timeRemaining)}</strong>`;
+            } else {
+                banner.innerHTML = `Pemesanan saat ini sedang <strong>DITUTUP</strong>`;
+            }
+        } else {
+            formContainer.style.display = 'block';
+            if (countdownType === 'tutup') {
+                banner.style.display = 'block';
+                banner.style.background = 'rgba(16, 185, 129, 0.1)';
+                banner.style.color = '#10b981';
+                banner.style.border = '1px dashed rgba(16, 185, 129, 0.3)';
+                banner.innerHTML = `Pemesanan ditutup dalam: <strong>${formatDuration(timeRemaining)}</strong>`;
+            } else {
+                banner.style.display = 'none';
+            }
+        }
+    }, 1000);
+}
+
+function formatDuration(ms) {
+    if (ms <= 0) return '00:00:00';
+    const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const mins = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+    const secs = Math.floor((ms % (1000 * 60)) / 1000);
+    let str = '';
+    if (days > 0) str += `${days} Hari `;
+    str += `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return str;
+}
+
+async function sendConfigUpdate(isOpen) {
+    const openLocal = document.getElementById('config-open').value;
+    const closeLocal = document.getElementById('config-close').value;
+    
+    const openISO = openLocal ? openLocal + ':00+08:00' : '';
+    const closeISO = closeLocal ? closeLocal + ':00+08:00' : '';
+
+    const btn = document.getElementById('btn-save-schedule');
+    const oldBtnText = btn.textContent;
+    btn.textContent = 'Menyimpan...';
+
+    try {
+        const response = await fetch(GAS_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+                action: 'update_config',
+                password: currentPassword,
+                config: {
+                    isOpen: isOpen,
+                    openTime: openISO,
+                    closeTime: closeISO
+                }
+            })
+        });
+        const res = await response.json();
+        if (res.success) {
+            alert(res.message);
+            loadDataPesanan();
+        } else {
+            alert('Gagal: ' + res.message);
+        }
+    } catch (err) {
+        alert('Terjadi kesalahan: ' + err.message);
+    }
+    btn.textContent = oldBtnText;
+}
+
+if (document.getElementById('btn-save-schedule')) {
+    document.getElementById('btn-save-schedule').addEventListener('click', () => sendConfigUpdate('auto'));
+}
+if (document.getElementById('btn-force-open')) {
+    document.getElementById('btn-force-open').addEventListener('click', () => {
+        if(confirm('Yakin ingin membuka pesanan sekarang juga (Buka Paksa)?')) sendConfigUpdate('true');
+    });
+}
+if (document.getElementById('btn-force-close')) {
+    document.getElementById('btn-force-close').addEventListener('click', () => {
+        if(confirm('Yakin ingin menutup pesanan sekarang juga (Tutup Paksa)?')) sendConfigUpdate('false');
+    });
+}
+
 async function loadDataPesanan() {
   const tbody = document.getElementById('table-body');
   
@@ -174,9 +320,19 @@ async function loadDataPesanan() {
 
   try {
     const response = await fetch(GAS_API_URL);
-    const data = await response.json();
+    const rawData = await response.json();
     
-    if (data.error) throw new Error(data.error);
+    if (rawData.error) throw new Error(rawData.error);
+
+    let data;
+    if (Array.isArray(rawData)) {
+        data = rawData;
+    } else {
+        data = rawData.data;
+        serverConfig = rawData.config;
+        updateAdminConfigUI();
+        startCountdown();
+    }
 
     globalData = data;
     renderTable(globalData);
@@ -508,6 +664,7 @@ btnLogin.addEventListener('click', async () => {
         
         if(result.success) {
             isAdmin = true;
+            currentPassword = pwd;
             loginModal.classList.remove('show');
             msg.style.display = 'none';
             document.getElementById('admin-badge').style.display = 'inline-block';
@@ -516,6 +673,7 @@ btnLogin.addEventListener('click', async () => {
             document.querySelector('.form-card').style.display = 'none'; 
             renderTable(globalData);
             renderDashboard(globalData);
+            updateAdminConfigUI();
         } else {
             msg.classList.add('error');
             msg.textContent = result.message || 'Login gagal';
