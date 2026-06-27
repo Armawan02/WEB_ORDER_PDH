@@ -147,7 +147,7 @@ function doPost(e) {
       allVolume,
       fileUrl,
       'Pending', 
-      'Proses',  
+      'Pending',  
       "'" + data.noWa, 
       submitDate
     ];

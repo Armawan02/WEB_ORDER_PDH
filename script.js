@@ -219,6 +219,9 @@ function renderTable(data) {
       let prosesCell = '';
       let validasiCell = '';
       
+      let sp = item.statusProses;
+      if (sp === 'Proses') sp = 'Pending'; // fallback for old data
+
       if(isAdmin) {
           bayarCell = `<select class="admin-select" onchange="updateStatus(${item.rowId}, 'bayar', this.value)">
               <option value="Pending" ${item.statusBayar==='Pending'?'selected':''}>Pending</option>
@@ -226,28 +229,36 @@ function renderTable(data) {
               <option value="Lunas" ${item.statusBayar==='Lunas'?'selected':''}>Lunas</option>
           </select>`;
           prosesCell = `<select class="admin-select" onchange="updateStatus(${item.rowId}, 'proses', this.value)">
-              <option value="Pending" ${item.statusProses==='Pending'?'selected':''}>Pending</option>
-              <option value="Proses Cetak" ${item.statusProses==='Proses Cetak'?'selected':''}>Proses Cetak</option>
-              <option value="Selesai" ${item.statusProses==='Selesai'?'selected':''}>Selesai</option>
+              <option value="Pending" ${sp==='Pending'?'selected':''}>Pending</option>
+              <option value="Proses Cetak" ${sp==='Proses Cetak'?'selected':''}>Proses Cetak</option>
+              <option value="Selesai" ${sp==='Selesai'?'selected':''}>Selesai</option>
           </select>`;
           if (item.jenisPdh.includes('Exclusive')) {
+              let val = item.validasi;
+              if (val === 'Lulus') val = 'Disetujui';
+              if (val === 'Ditolak') val = 'Tidak Disetujui';
+              
               validasiCell = `<select class="admin-select" onchange="updateStatus(${item.rowId}, 'validasi', this.value)">
-                  <option value="Menunggu" ${item.validasi==='Menunggu'?'selected':''}>Menunggu</option>
-                  <option value="Lulus" ${item.validasi==='Lulus'?'selected':''}>Lulus</option>
-                  <option value="Ditolak" ${item.validasi==='Ditolak'?'selected':''}>Ditolak</option>
+                  <option value="Menunggu" ${val==='Menunggu'?'selected':''}>Menunggu</option>
+                  <option value="Disetujui" ${val==='Disetujui'?'selected':''}>Disetujui</option>
+                  <option value="Tidak Disetujui" ${val==='Tidak Disetujui'?'selected':''}>Tidak Disetujui</option>
               </select>`;
           } else {
               validasiCell = '-';
           }
       } else {
           let badgeBayar = item.statusBayar.toLowerCase().includes('lunas') ? 'success' : (item.statusBayar.toLowerCase().includes('dp') ? 'primary' : 'warning');
-          let badgeProses = item.statusProses.toLowerCase().includes('selesai') ? 'success' : (item.statusProses.toLowerCase().includes('proses') ? 'primary' : 'warning');
+          let badgeProses = sp.toLowerCase().includes('selesai') ? 'success' : (sp.toLowerCase().includes('cetak') ? 'primary' : 'warning');
           bayarCell = `<span class="badge ${badgeBayar}">${item.statusBayar.toUpperCase()}</span>`;
-          prosesCell = `<span class="badge ${badgeProses}">${item.statusProses.toUpperCase()}</span>`;
+          prosesCell = `<span class="badge ${badgeProses}">${sp.toUpperCase()}</span>`;
           
           if (item.jenisPdh.includes('Exclusive') && item.validasi) {
-              let badgeVal = item.validasi.toLowerCase() === 'lulus' ? 'success' : (item.validasi.toLowerCase() === 'ditolak' ? 'danger' : (item.validasi.toLowerCase() === 'menunggu' ? 'warning' : 'primary'));
-              validasiCell = `<span class="badge ${badgeVal}">${item.validasi.toUpperCase()}</span>`;
+              let val = item.validasi;
+              if (val === 'Lulus') val = 'Disetujui';
+              if (val === 'Ditolak') val = 'Tidak Disetujui';
+              
+              let badgeVal = val.toLowerCase() === 'disetujui' ? 'success' : (val.toLowerCase() === 'tidak disetujui' ? 'danger' : (val.toLowerCase() === 'menunggu' ? 'warning' : 'primary'));
+              validasiCell = `<span class="badge ${badgeVal}">${val.toUpperCase()}</span>`;
           } else {
               validasiCell = '-';
           }
