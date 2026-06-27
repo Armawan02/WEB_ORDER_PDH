@@ -208,6 +208,7 @@ function doPost(e) {
     let allUkuran = data.items.map(item => item.ukuran).join(', ');
     let allJenisPdh = data.items.map(item => item.jenisPdh).join(', ');
     let allVolume = data.items.map(item => item.volume).join(', ');
+    let allDivisi = data.items.map(item => item.divisi || '-').join(', ');
     
     let finalStatusValidasi = hasExclusive ? 'Menunggu' : '';
     let finalKaryaUrl = karyaUrls.join(', ');
@@ -215,7 +216,7 @@ function doPost(e) {
     const rowData = [
       data.nama,
       allUkuran,
-      data.divisi,
+      allDivisi,
       allJenisPdh,
       finalKaryaUrl,
       finalStatusValidasi,

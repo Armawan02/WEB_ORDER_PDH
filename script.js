@@ -45,6 +45,7 @@ document.getElementById('btn-tambah-pesanan').addEventListener('click', function
     // Reset values
     newItem.querySelector('.jenisPdh-input').value = '';
     newItem.querySelector('.ukuran-input').value = '';
+    newItem.querySelector('.divisi-input').value = '';
     newItem.querySelector('.volume-input').value = '1';
     newItem.querySelector('.karya-group-local').style.display = 'none';
     newItem.querySelector('.fileKarya-local').value = '';
@@ -100,7 +101,6 @@ document.getElementById('form-pesanan').addEventListener('submit', async functio
       action: 'order',
       nama: document.getElementById('nama').value,
       noWa: document.getElementById('noWa').value,
-      divisi: document.getElementById('divisi').value,
       items: [],
       base64File: base64File,
       fileName: file.name,
@@ -120,6 +120,10 @@ document.getElementById('form-pesanan').addEventListener('submit', async functio
        };
        
        if (jp === 'Exclusive') {
+           const divInput = item.querySelector('.divisi-input').value;
+           if (!divInput) throw new Error("Divisi wajib dipilih untuk tipe Exclusive.");
+           itemData.divisi = divInput;
+
            const karyaInput = item.querySelector('.fileKarya-local');
            const fileKarya = karyaInput.files[0];
            if (!fileKarya) throw new Error("Dokumen Pendukung wajib diunggah untuk tipe Exclusive.");
